@@ -1,0 +1,203 @@
+%
+% Runs USRP ionogram scannings onceNIonAll
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear;
+
+% DELECT MODIS OR USRP
+% lMODIS = true; % IF MODIS
+lMODIS = false; % IF USRP 
+NCh = 4;
+% SET INITIAL PARAM
+fft_length=32;
+usrp_no=NCh;
+
+if lMODIS
+    NIon = 150;
+    %code_type='32b'; % MODIS
+    code_type='16b'; % MODIS
+    lpulse_shaping = false;
+    NIonAll = NIon*NCh;
+else
+    NIon = 217;
+    code_type='16b'; % USRP
+    lpulse_shaping = true;
+    NIonAll = NIon*NCh;
+end
+
+% % % fft_length=32;
+% % % usrp_no=2;
+
+input_data_folder='c:/usrp/input_raw_data/';
+% % % ini_file1='usrp_sounder1.ini';
+% % % ini_file2='usrp_sounder2.ini';
+data_folder='c:/usrp/data/raw/';
+img_folder='c:/usrp/data/img/';
+mat_folder='c:/usrp/data/mat/';
+% % % code_folder='c:/usrp/code/';
+% % % mode_file='iono.ini';
+current_folder=[pwd '/'];
+cd('..');
+cd('code');
+code_folder=[pwd '/'];
+cd(current_folder);
+
+
+tic
+% Update code files
+copyfile([code_folder,code_type,'/tx_buff_even.dat'],[input_data_folder,'tx_buff_even.dat']);
+copyfile([code_folder,code_type,'/tx_buff_odd.dat'],[input_data_folder,'tx_buff_odd.dat']);
+fprintf('%s Code files updated with: %s\n',datestr(now,'yyyy-mm-dd hh:MM:ss'),code_type);
+
+% Run USRP sounder
+% % % fprintf('%s Starting sounding...\n',datestr(now,'hh:MM:ss'));
+dt=now;
+% % cd(input_data_folder);
+% % if usrp_no>1
+% % %    system(sprintf('./usrp_sounder %s %s &',ini_file2,mode_file));
+% % %    system(sprintf('./usrp_sounder %s %s',ini_file1,mode_file));
+% % else
+% % %    system(sprintf('./usrp_sounder %s %s',ini_file1,mode_file));
+% % end
+% % cd(current_folder);
+% % % fprintf('%s Sounding finished. Elapsed time: %.2f sec.\n',datestr(now,'hh:MM:ss'),toc);
+
+% -----------------------
+% Process USRP data
+% -----------------------
+
+% Get ionogram exact date time
+% raw_file_mask=sprintf('%s%s_*.dat',input_data_folder,datestr(dt,'yyyymmdd'));
+raw_file_mask = [input_data_folder '20*.dat'];
+
+files_all=dir(raw_file_mask);
+Nsoundings = size(files_all,1)/NIonAll;
+distr_p = zeros(Nsoundings,4);
+
+% processing Nsounding soundings
+    
+for pp=1:Nsoundings
+    
+    tic % start processi++ng time counting
+
+    % show number of ionogram processed 
+    fprintf('Sounding %03d from %03d is processing\n',pp,Nsoundings);
+    
+    files = files_all((1+NIonAll*(pp-1)):(NIonAll*pp));    
+    
+    file_name=files(end).name;
+    dt=datenum(datetime(file_name(1:15),'InputFormat','yyyyMMdd_HHmmss'));
+    utc_dt=datenum(datetime(dt,'ConvertFrom','datenum','TimeZone','local'));
+    
+    % Find number of channels
+    ch_file_mask=sprintf('%s%s*.dat',input_data_folder,file_name(1:end-6));
+    ch_files=dir(ch_file_mask);
+    ch_no=length(ch_files);
+    fprintf('%s Number of channels: %d.\n',datestr(now,'hh:MM:ss'),ch_no);
+    
+    date_folder=datestr(dt,'yyyy-mm-dd');
+    
+    for i=0:ch_no-1
+        fprintf('%s Processi+ng ionogram for channel %d.\n',datestr(now,'hh:MM:ss'),i);
+    
+        close all
+    
+        % Build ionogram
+        [freq,hght,ampl(:,:,i+1),dopp(:,:,i+1)]=build_ionogram(input_data_folder,utc_dt,i,code_type,fft_length,lMODIS,lpulse_shaping);
+    
+        % Plot ionogram image
+        [fig,Mtrx(i+1)]=plot_ionogram(freq,hght,ampl(:,:,i+1),code_type,utc_dt,lpulse_shaping);
+    
+        % Save image file
+        img_file_name=sprintf('%s/%s_c%d.png',current_folder,datestr(utc_dt,'yyyymmdd_hhMMss'),i);
+        print(fig,img_file_name,'-dpng','-r0');
+    
+        % Save mat file
+        mat_file_name=sprintf('%s/%s_c%d.mat',current_folder,datestr(utc_dt,'yyyymmdd_hhMMSS'),i);
+        amp=ampl(:,:,i+1);
+        code=code_type;
+        utc=utc_dt;
+        save(mat_file_name,'utc','code','freq','hght','amp','dopp');
+    
+        % Move img file
+        fld=sprintf('%s%s',img_folder,date_folder);
+        if ~exist(fld, 'dir')
+            mkdir(fld);
+        end
+        movefile(img_file_name,fld);
+    
+        % Move mat file
+        fld=sprintf('%s%s',mat_folder,date_folder);
+        if ~exist(fld, 'dir')
+            mkdir(fld);
+        end
+        movefile(mat_file_name,fld);
+    end
+    
+    % Plot polarization ionogram
+    if ch_no>1
+        [f1,f2,distr_p12]=plot_polarization_ionogram(utc_dt,freq,hght,ampl(:,:,1:2),lpulse_shaping,code);
+        distr12p(pp,:) = distr_p12;
+        distr_dt(pp,1) = utc_dt;
+    
+        % Save image files
+        img_file_name1=sprintf('%s/%s_p01.png',current_folder,datestr(utc_dt,'yyyymmdd_hhMMss'));
+        print(f1,img_file_name1,'-dpng','-r0');
+        img_file_name2=sprintf('%s/%s_d01.png',current_folder,datestr(utc_dt,'yyyymmdd_hhMMss'));
+        print(f2,img_file_name2,'-dpng','-r0'); 
+    
+        % Move image files
+        fld=sprintf('%s%s',img_folder,date_folder);
+        movefile(img_file_name1,fld);
+        movefile(img_file_name2,fld);
+    end
+    
+    if ch_no>3
+        [f1,f2,distr_p34]=plot_polarization_ionogram(utc_dt,freq,hght,ampl(:,:,3:4),lpulse_shaping,code);
+        distr34p(pp,:) = distr_p34;
+    
+        % Save image files
+        img_file_name1=sprintf('%s/%s_p23.png',current_folder,datestr(utc_dt,'yyyymmdd_hhMMss'));
+        print(f1,img_file_name1,'-dpng','-r0');
+        img_file_name2=sprintf('%s/%s_d23.png',current_folder,datestr(utc_dt,'yyyymmdd_hhMMss'));
+        print(f2,img_file_name2,'-dpng','-r0');
+    
+        % Move image files
+        fld=sprintf('%s%s',img_folder,date_folder);
+        movefile(img_file_name1,fld);
+        movefile(img_file_name2,fld);
+    end
+
+   % save and move polarization mat file
+   if ch_no>1   
+        % Save polarization mat file
+        mat_p_file_name=sprintf('%s/%s_p.mat',current_folder,datestr(utc_dt,'yyyymmdd_hhMMSS'));
+        utc=utc_dt;
+        
+        if ch_no>3
+            save(mat_p_file_name,'utc','distr_p12','distr_p34','Mtrx');
+        else
+            save(mat_p_file_name,'utc','distr_p12','Mtrx');
+        end
+
+        % Move mat file
+        fld=sprintf('%s%s',mat_folder,date_folder);
+        if ~exist(fld, 'dir')
+            mkdir(fld);
+        end
+        movefile(mat_p_file_name,fld);
+   end
+    
+    % Move raw files
+    fld=sprintf('%s%s',data_folder,date_folder);
+    if ~exist(fld, 'dir')
+        mkdir(fld);
+    end
+        raw_sounding_file_mask = [files(1).folder '\' files(1).name(1:15) '*.dat'];
+    movefile(raw_sounding_file_mask,fld);
+    % movefile(raw_file_mask,fld);
+    
+    % show one sounding processing time
+    fprintf('%s Ionograms processed. Elapsed time: %.2f sec.\n',datestr(now,'hh:MM:ss'),toc);
+
+end
