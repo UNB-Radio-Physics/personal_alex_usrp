@@ -1,4 +1,4 @@
-function [freq,hght,amp,dopp,dopp_broad] = build_ionogram(baseDir,dt,ch_no,code_type,total_num,lMODIS,lpulse_shaping)
+function [freq,hght,amp,dopp,dopp_broad] = build_ionogram_mod_alg(baseDir,dt,ch_no,code_type,total_num,lMODIS,lpulse_shaping)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lMODIS = true; % IF MODIS
@@ -73,18 +73,21 @@ fclose(fin);
 complex_data = complex(data(1:2:size(data,1)),data(2:2:size(data,1)));
 
 ind = 0;
-for i=0:2:total_num-1
-    corr = ...
-        xcorr(complex_data(i*pulse_length+1:i*pulse_length+pulse_length), pls_odd) + ...
-        xcorr(complex_data((i+1)*pulse_length+1:(i+1)*pulse_length+pulse_length), pls_even);
-
-    corr_data(ind*pulse_length+1:ind*pulse_length+pulse_length) = ...
-        corr(pulse_length:2*pulse_length-1);
+for i=0:1:total_num-2
+    if mod(i,2)==0
+        corr = ...
+            xcorr(complex_data(i*pulse_length+1:i*pulse_length+pulse_length), pls_odd) + ...
+            xcorr(complex_data((i+1)*pulse_length+1:(i+1)*pulse_length+pulse_length), pls_even);
+    else
+        corr = ...
+            xcorr(complex_data(i*pulse_length+1:i*pulse_length+pulse_length), pls_even) + ...
+            xcorr(complex_data((i+1)*pulse_length+1:(i+1)*pulse_length+pulse_length), pls_odd);
+    end
 
     ind = ind + 1;
 end
 
-bin_compr_data=reshape(corr_data,[pulse_length, total_num/2]);
+bin_compr_data = reshape(corr_data,[pulse_length, total_num-1]);
 bin_compr_ft=fftshift((fft(bin_compr_data,[],2)),2);
 
 % Calculate index of zero frequency in fftshift
