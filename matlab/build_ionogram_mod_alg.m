@@ -49,7 +49,7 @@ h_from = sol*length(pls_odd)/(2*samp_rate);
 %h_from = -10;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ind_from=find(hght>=h_from,1);
-ind_from = 1;
+ind_from = 101;
 %ind_to=find(hght>(max(hght)-shift),1);
 ind_to=length(hght);
 ind_to=1005;
