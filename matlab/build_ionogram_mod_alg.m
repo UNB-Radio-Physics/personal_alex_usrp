@@ -83,6 +83,9 @@ for i=0:1:total_num-2
             xcorr(complex_data(i*pulse_length+1:i*pulse_length+pulse_length), pls_even) + ...
             xcorr(complex_data((i+1)*pulse_length+1:(i+1)*pulse_length+pulse_length), pls_odd);
     end
+    
+    corr_data(ind*pulse_length+1:ind*pulse_length+pulse_length) = ...
+        corr(pulse_length:2*pulse_length-1);
 
     ind = ind + 1;
 end
