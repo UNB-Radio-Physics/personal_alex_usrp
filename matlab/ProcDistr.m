@@ -8,9 +8,9 @@
 clear
 
 % initial parameters and flags
-mat_p_folder='c:/usrp/PhaseCheck/'; % mat-data folder
-mat_p_name = 'distr_all_m32bps.mat'; % input mat-file name
-mat_p_name_out = 'distr_all_m32bps_out.mat'; % output mat-file name
+mat_p_folder='c:/data_comp/'; % mat-data folder
+mat_p_name = '16bit_distr_all.mat'; % input mat-file name
+mat_p_name_out = '16bit_distr_all_out.mat'; % output mat-file name
 lShowSigma = false; % Show sigma ?
 
 % preplot figures
@@ -26,14 +26,14 @@ load([mat_p_folder mat_p_name]);
 
 % Convert time range for MODIS
 
-% M1 = 1;
-% M2 = 328;
+M1 = 1;
+M2 = 328;
 %  
 % M1 = 329;
 % M2 = 431;
 % 
-M1 = 432;
-M2 = 796;
+% M1 = 432;
+% M2 = 796;
 
 % M1 = 1;
 % M2 = 796;
@@ -44,14 +44,14 @@ Mtrx1_m = Mtrx1_m(M1:M2,:);
 Mtrx2_m = Mtrx2_m(M1:M2,:);
 utcAp_m = utcAp_m(M1:M2,1);
 
-% U1 = 1;
-% U2 = 206;
+U1 = 1;
+U2 = 206;
 % 
 % U1 = 207;
 % U2 = 227;
 % 
-U1 = 228;
-U2 = 428;
+% U1 = 228;
+% U2 = 428;
 % 
 % U1 = 1;
 % U2 = 428;
@@ -62,9 +62,9 @@ Mtrx1_u = Mtrx1_u(U1:U2,:);
 Mtrx2_u = Mtrx2_u(U1:U2,:);
 utcAp_u = utcAp_u(U1:U2,1);
 
-% sTimeTitle = '2024 June 01(00:00UT)-06(19:30UT), ';
+sTimeTitle = '2024 June 01(00:00UT)-06(19:30UT), ';
 % sTimeTitle = '2024 June 06(19:30UT)-07(13:46UT), ';
-sTimeTitle = '2024 June 07(13:46UT)-12(24:00UT), ';
+% sTimeTitle = '2024 June 07(13:46UT)-12(24:00UT), ';
 % sTimeTitle = '2024 June 01(00:00UT)-12(24:00UT), ';
 
 % Set additional parameters
@@ -74,10 +74,11 @@ NsmtM = 33;
 NsmtUp = 23;
 
 % Set atrefacts soundinds to NaN
-artN_m = [402 497 533 654 655 656 702 763];
+% artN_m = [402 497 533 654 655 656 702 763];
 artN_m = [];
-artN_u = [4 68 99 100 101 105 106 147 148 156 157 199 202 228 288 289 347 372 373 374 377 392 399 404];
-artN_u = [];
+% artN_u = [4 68 99 100 101 105 106 147 148 156 157 199 202 228 288 289 347 372 373 374 377 392 399 404];
+artN_u = [4 68 99 100 101 105 106 147 148 156 157 199 202];
+%artN_u = [];
 artN_up = [96 154 155 156 157 158 159 160 161 190 246 274 352 355 415 480 511];
 distrAp12_m(artN_m,:) = NaN;
 distrAp12_u(artN_u,:) = NaN;

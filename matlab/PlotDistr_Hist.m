@@ -6,11 +6,11 @@
 clear
 
 % all polarization files YYYYMMDD_hhmmss_p.mat have to be moved to this folder
-mat_p_folder='C:\usrp\data\mat\';
+mat_p_folder='C:\data_comp\usrp_mat_all_20240601-12\';
 % coorect file name mask have to be used  
 mat_p = dir([mat_p_folder '2024*p.mat']);
 % output file name for arrays of distributtions
-mat_p_out = '202403_distr_all.mat';
+mat_p_out = '202406_distr_all_usrp.mat';
 
 % Number of polarization mat-files in input folder
 Nmat = size(mat_p,1);

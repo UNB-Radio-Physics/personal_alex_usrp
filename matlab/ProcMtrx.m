@@ -8,9 +8,9 @@
 clear
 
 % initial parameters and flags
-mat_p_folder='c:/usrp/PhaseCheck/'; % mat-data folder
-mat_p_name = 'distr_all_m32bps.mat'; % input mat-file name
-mat_p_name_out = 'distr_all_m32bps_Mtrx_out.mat'; % output mat-file name
+mat_p_folder='c:/data_comp/'; % mat-data folder
+mat_p_name = '16bit_distr_all.mat'; % input mat-file name
+mat_p_name_out = '16bit_distr_all_Mtrx_out.mat'; % output mat-file name
 
 
 % lShowSigma = false; % Show sigma ?
@@ -25,14 +25,14 @@ clf(f2);
 load([mat_p_folder mat_p_name]);
 
 % Convert time range for MODIS
-% M1 = 1;
-% M2 = 328;
+M1 = 1;
+M2 = 328;
 %  
 % M1 = 329;
 % M2 = 431;
 % 
-M1 = 432;
-M2 = 796;
+% M1 = 432;
+% M2 = 796;
 % 
 % M1 = 1;
 % M2 = 796;
@@ -42,9 +42,9 @@ Mtrx1_m = Mtrx1_m(M1:M2,:);
 Mtrx2_m = Mtrx2_m(M1:M2,:);
 utcAp_m = utcAp_m(M1:M2,1);
 
-% sTimeTitle = '2024 June 01(00:00UT)-06(19:30UT), ';
+sTimeTitle = '2024 June 01(00:00UT)-06(19:30UT), ';
 % sTimeTitle = '2024 June 06(19:30UT)-07(13:46UT), ';
-sTimeTitle = '2024 June 07(13:46UT)-12(24:00UT), ';
+% sTimeTitle = '2024 June 07(13:46UT)-12(24:00UT), ';
 % sTimeTitle = '2024 June 01(00:00UT)-12(24:00UT), ';
 
 % convert to datetime
